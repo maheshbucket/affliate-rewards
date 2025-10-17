@@ -4,6 +4,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { generateSlug } from '@/lib/utils'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/categories - List all categories
 export async function GET() {
   try {

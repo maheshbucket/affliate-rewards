@@ -6,6 +6,8 @@ import { buildUtmUrl } from '@/lib/utils'
 import { awardPoints, POINT_VALUES } from '@/lib/points'
 import { generateQRCode } from '@/lib/qrcode'
 
+export const dynamic = 'force-dynamic'
+
 // POST /api/shares - Create a short URL for sharing
 export async function POST(request: Request) {
   try {

@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getUserPoints, getPointHistory } from '@/lib/points'
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/user/points - Get user points and history
 export async function GET(request: Request) {
   try {

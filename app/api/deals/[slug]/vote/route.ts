@@ -4,6 +4,8 @@ import prisma from '@/lib/prisma'
 import { authOptions } from '@/lib/auth'
 import { awardPoints, POINT_VALUES } from '@/lib/points'
 
+export const dynamic = 'force-dynamic'
+
 // POST /api/deals/[slug]/vote - Vote on a deal
 export async function POST(
   request: Request,
