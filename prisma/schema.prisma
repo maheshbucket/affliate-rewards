@@ -1,0 +1,352 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  VISITOR
+  USER
+  MODERATOR
+  ADMIN
+}
+
+enum DealStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum AffiliateNetwork {
+  AMAZON
+  COMMISSION_JUNCTION
+  RAKUTEN
+  SHAREASALE
+  IMPACT
+  CUSTOM
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          UserRole  @default(USER)
+  bio           String?
+  points        Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  banned        Boolean   @default(false)
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  deals         Deal[]
+  votes         Vote[]
+  comments      Comment[]
+  pointHistory  PointHistory[]
+  redemptions   Redemption[]
+  preferences   UserPreference?
+  activities    UserActivity[]
+  shares        Share[]
+
+  @@index([email])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  icon        String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  deals Deal[]
+
+  @@index([slug])
+}
+
+model Deal {
+  id              String          @id @default(cuid())
+  title           String
+  slug            String          @unique
+  description     String          @db.Text
+  originalPrice   Float
+  dealPrice       Float
+  savings         Float
+  savingsPercent  Float
+  affiliateUrl    String          @db.Text
+  affiliateNetwork AffiliateNetwork
+  imageUrl        String?
+  videoUrl        String?
+  status          DealStatus      @default(PENDING)
+  expiresAt       DateTime?
+  featured        Boolean         @default(false)
+  featuredOrder   Int?
+  
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+  
+  // Tracking
+  views           Int             @default(0)
+  clicks          Int             @default(0)
+  conversions     Int             @default(0)
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  approvedAt      DateTime?
+  
+  // Relations
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  categoryId      String
+  category        Category        @relation(fields: [categoryId], references: [id])
+  
+  tags            Tag[]
+  votes           Vote[]
+  comments        Comment[]
+  auditLogs       AuditLog[]
+  shares          Share[]
+  analytics       DealAnalytics[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([userId])
+  @@index([categoryId])
+  @@index([featured])
+  @@index([expiresAt])
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  deals     Deal[]
+  createdAt DateTime @default(now())
+
+  @@index([slug])
+}
+
+model Vote {
+  id        String   @id @default(cuid())
+  value     Int      // 1 for upvote, -1 for downvote
+  createdAt DateTime @default(now())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dealId    String
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dealId])
+  @@index([dealId])
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  content   String    @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dealId    String
+  deal      Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  
+  parentId  String?
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+
+  @@index([dealId])
+  @@index([userId])
+}
+
+model PointHistory {
+  id          String   @id @default(cuid())
+  points      Int
+  reason      String
+  description String?
+  createdAt   DateTime @default(now())
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model RewardTier {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  pointsRequired Int
+  benefits    String   @db.Text // JSON array of benefits
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  
+  redemptions Redemption[]
+}
+
+model Redemption {
+  id          String      @id @default(cuid())
+  pointsSpent Int
+  status      String      @default("pending") // pending, completed, cancelled
+  createdAt   DateTime    @default(now())
+  completedAt DateTime?
+  
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tierId      String
+  tier        RewardTier  @relation(fields: [tierId], references: [id])
+
+  @@index([userId])
+}
+
+model UserPreference {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Notification preferences
+  emailNotifications    Boolean  @default(true)
+  pushNotifications     Boolean  @default(true)
+  dealApprovals         Boolean  @default(true)
+  pointUpdates          Boolean  @default(true)
+  
+  // Category preferences (JSON array)
+  favoriteCategories    String   @default("[]")
+  
+  // Affiliate network preferences (JSON array)
+  preferredNetworks     String   @default("[]")
+  
+  // Display preferences
+  showOnLeaderboard     Boolean  @default(true)
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model UserActivity {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  action      String   // 'view', 'click', 'vote', 'comment', 'share'
+  targetType  String   // 'deal', 'profile', etc.
+  targetId    String?
+  metadata    String?  @db.Text // JSON for additional data
+  
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([targetType, targetId])
+}
+
+model Share {
+  id          String   @id @default(cuid())
+  shortUrl    String   @unique
+  originalUrl String   @db.Text
+  platform    String   // 'twitter', 'facebook', 'email', 'direct'
+  
+  // UTM parameters
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  
+  clicks      Int      @default(0)
+  createdAt   DateTime @default(now())
+  
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  dealId      String?
+  deal        Deal?    @relation(fields: [dealId], references: [id])
+
+  @@index([shortUrl])
+  @@index([dealId])
+}
+
+model DealAnalytics {
+  id          String   @id @default(cuid())
+  dealId      String
+  deal        Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  
+  date        DateTime @default(now())
+  views       Int      @default(0)
+  clicks      Int      @default(0)
+  conversions Int      @default(0)
+  
+  // Traffic sources
+  referralSource String? // 'homepage', 'category', 'search', 'direct', 'social'
+  
+  @@unique([dealId, date, referralSource])
+  @@index([dealId])
+  @@index([date])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  action      String   // 'create', 'update', 'delete', 'approve', 'reject'
+  entity      String   // 'deal', 'user', etc.
+  entityId    String
+  changes     String   @db.Text // JSON of changes
+  performedBy String   // userId
+  createdAt   DateTime @default(now())
+  
+  deal        Deal?    @relation(fields: [entityId], references: [id])
+
+  @@index([entityId])
+  @@index([performedBy])
+}
+
+model SystemSettings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
