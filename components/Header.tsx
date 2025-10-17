@@ -15,8 +15,8 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <Trophy className="w-8 h-8 text-primary-600" />
-            <span className="text-xl font-bold text-gray-900">
+            <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-primary-600" />
+            <span className="text-lg sm:text-xl font-bold text-gray-900">
               Affiliate Rewards
             </span>
           </Link>
@@ -34,12 +34,12 @@ export function Header() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex items-center gap-4">
+          <nav className="flex items-center gap-2 sm:gap-4">
             {session ? (
               <>
                 <Link
                   href="/deals/submit"
-                  className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm sm:text-base"
                 >
                   <Plus className="w-4 h-4" />
                   <span className="hidden sm:inline">Submit Deal</span>
@@ -47,7 +47,7 @@ export function Header() {
 
                 <Link
                   href="/leaderboard"
-                  className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-primary-600"
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-gray-700 hover:text-primary-600"
                 >
                   <Trophy className="w-5 h-5" />
                   <span className="hidden sm:inline">Leaderboard</span>
@@ -56,7 +56,7 @@ export function Header() {
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-primary-600"
+                    className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-gray-700 hover:text-primary-600"
                   >
                     <User className="w-5 h-5" />
                     <span className="hidden sm:inline">{session.user.name}</span>
@@ -115,13 +115,13 @@ export function Header() {
               <>
                 <Link
                   href="/auth/signin"
-                  className="px-4 py-2 text-gray-700 hover:text-primary-600"
+                  className="px-3 sm:px-4 py-2 text-gray-700 hover:text-primary-600 text-sm sm:text-base whitespace-nowrap"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+                  className="px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm sm:text-base whitespace-nowrap"
                 >
                   Sign Up
                 </Link>
@@ -132,7 +132,7 @@ export function Header() {
       </div>
 
       {/* Mobile Search */}
-      <div className="md:hidden px-4 pb-3">
+      <div className="md:hidden px-4 pb-3 pt-2 border-t border-gray-100">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
