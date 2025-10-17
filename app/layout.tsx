@@ -10,6 +10,7 @@ import { Toaster } from 'react-hot-toast'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: 'Affiliate Rewards - Best Deals & Discounts Hub',
   description: 'Discover the best affiliate deals and discounts in one place. Earn rewards while you shop and save money!',
   keywords: 'deals, discounts, affiliate, rewards, shopping, savings',
