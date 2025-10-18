@@ -46,19 +46,9 @@ export default function TenantsAdminPage() {
   const [success, setSuccess] = useState('')
 
   useEffect(() => {
-    console.log('🔍 Admin Auth Check:', { 
-      status, 
-      hasSession: !!session,
-      userRole: session?.user?.role,
-      isAdmin: session?.user?.role === 'ADMIN',
-      fullSession: session 
-    })
-    
     if (status === 'unauthenticated') {
-      console.log('❌ Redirecting to signin - not authenticated')
       router.push('/auth/signin')
     } else if (status === 'authenticated' && session?.user?.role !== 'ADMIN') {
-      console.log('❌ Redirecting to home - not admin. Role:', session?.user?.role)
       router.push('/')
     }
   }, [session, status, router])
@@ -144,43 +134,16 @@ export default function TenantsAdminPage() {
     }
   }
 
-  if (status === 'loading') {
+  if (status === 'loading' || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading session...</div>
-      </div>
-    )
-  }
-
-  if (status === 'unauthenticated') {
-    return null
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading tenants...</div>
+        <div className="text-lg">Loading...</div>
       </div>
     )
   }
 
   if (session?.user?.role !== 'ADMIN') {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-red-600">
-          Access Denied. Your role: {session?.user?.role || 'NONE'}
-          <br />
-          Required role: ADMIN
-          <br />
-          <button 
-            onClick={() => console.log('Full session:', session)}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
-          >
-            Log Session to Console
-          </button>
-        </div>
-      </div>
-    )
+    return null
   }
 
   return (
