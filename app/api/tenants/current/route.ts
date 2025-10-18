@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentTenant, getTenantMetadata } from '@/lib/tenant'
 
+// Force dynamic rendering for this route (uses headers())
+export const dynamic = 'force-dynamic'
+
 // GET /api/tenants/current - Get current tenant based on subdomain/domain
 export async function GET(req: NextRequest) {
   try {

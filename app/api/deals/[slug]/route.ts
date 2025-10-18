@@ -4,6 +4,9 @@ import prisma from '@/lib/prisma'
 import { authOptions } from '@/lib/auth'
 import { getCurrentTenant } from '@/lib/tenant'
 
+// Force dynamic rendering (uses headers())
+export const dynamic = 'force-dynamic'
+
 // GET /api/deals/[slug] - Get a single deal
 export async function GET(
   request: Request,

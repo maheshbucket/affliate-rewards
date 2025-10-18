@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { resolveShortUrl } from '@/lib/shortener'
 import { getCurrentTenant } from '@/lib/tenant'
 
+// Force dynamic rendering (uses headers())
+export const dynamic = 'force-dynamic'
+
 // GET /s/[code] - Redirect short URL
 export async function GET(
   request: Request,

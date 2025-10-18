@@ -7,6 +7,9 @@ import { z } from 'zod'
 import { generateUniqueSlug, calculateSavings, validateAffiliateUrl } from '@/lib/utils'
 import { awardPoints, POINT_VALUES } from '@/lib/points'
 
+// Force dynamic rendering (uses headers())
+export const dynamic = 'force-dynamic'
+
 const createDealSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   description: z.string().min(20, 'Description must be at least 20 characters'),

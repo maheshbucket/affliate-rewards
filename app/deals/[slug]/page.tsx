@@ -8,6 +8,9 @@ import { Clock, ExternalLink, Eye, MousePointerClick, Calendar, Tag } from 'luci
 import type { Metadata } from 'next'
 import { getCurrentTenant } from '@/lib/tenant'
 
+// Force dynamic rendering (uses headers())
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   params: { slug: string }
 }

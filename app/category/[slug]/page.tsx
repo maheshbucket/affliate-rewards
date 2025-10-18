@@ -4,6 +4,9 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getCurrentTenant } from '@/lib/tenant'
 
+// Force dynamic rendering (uses headers())
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
   params: { slug: string }
 }

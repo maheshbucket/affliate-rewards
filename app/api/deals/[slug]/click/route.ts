@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getCurrentTenant } from '@/lib/tenant'
 
+// Force dynamic rendering (uses headers())
+export const dynamic = 'force-dynamic'
+
 // POST /api/deals/[slug]/click - Track deal clicks
 export async function POST(
   request: Request,
