@@ -57,8 +57,19 @@ ALTER TABLE "Deal" ADD COLUMN "tenantId" TEXT;
 ALTER TABLE "Share" ADD COLUMN "tenantId" TEXT;
 
 -- Insert default tenant
-INSERT INTO "Tenant" ("id", "name", "subdomain", "brandName", "ownerEmail", "updatedAt")
-VALUES ('default-tenant-id', 'Affiliate Rewards', 'default', 'Affiliate Rewards', 'admin@example.com', NOW());
+INSERT INTO "Tenant" ("id", "name", "subdomain", "brandName", "tagline", "description", "metaTitle", "metaDescription", "ownerEmail", "updatedAt")
+VALUES (
+  'default-tenant-id', 
+  'Deals', 
+  'default', 
+  'Deals',
+  'Discover the Best Deals, Curated for You',
+  'Your trusted source for the best deals across electronics, fashion, home goods, and more. All deals are carefully curated and verified.',
+  'Best Deals - Curated Daily Discounts & Offers',
+  'Find the best deals on electronics, fashion, home & garden, beauty, sports, and travel. All deals curated and verified daily.',
+  'admin@example.com', 
+  NOW()
+);
 
 -- Associate existing data with default tenant
 UPDATE "User" SET "tenantId" = 'default-tenant-id' WHERE "tenantId" IS NULL;

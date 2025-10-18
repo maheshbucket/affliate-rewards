@@ -1,8 +1,23 @@
+'use client'
+
 import Link from 'next/link'
 import { Trophy } from 'lucide-react'
+import { useTenant } from './TenantProvider'
+
+// Format subdomain into "Subdomain Deals" (e.g., "pm" -> "PM Deals")
+function formatTenantName(subdomain?: string): string {
+  if (!subdomain || subdomain === 'default') return 'Deals'
+  const formatted = subdomain
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+  return `${formatted} Deals`
+}
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
+  const { tenant } = useTenant()
+  const displayName = formatTenantName(tenant?.subdomain)
 
   return (
     <footer className="bg-gray-900 text-gray-300 mt-auto">
@@ -13,12 +28,11 @@ export function Footer() {
             <div className="flex items-center gap-2 mb-4">
               <Trophy className="w-6 h-6 text-primary-400" />
               <span className="text-lg font-bold text-white">
-                Affiliate Rewards
+                {displayName}
               </span>
             </div>
             <p className="text-sm">
-              Your centralized hub for the best affiliate deals and discounts. 
-              Earn rewards while you shop and save!
+              {tenant?.tagline || 'Discover the best deals, curated for you. All deals carefully verified and updated daily!'}
             </p>
           </div>
 
@@ -101,7 +115,7 @@ export function Footer() {
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-center">
           <p>
-            © {currentYear} Affiliate Rewards. All rights reserved.
+            © {currentYear} {displayName}. All rights reserved.
           </p>
           <p className="mt-2 text-gray-400">
             Disclosure: We may earn affiliate commissions from qualifying purchases.

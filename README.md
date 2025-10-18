@@ -1,6 +1,6 @@
-# Affiliate Rewards Web App
+# Deals Platform - Multi-Tenant Deals Curation
 
-A comprehensive affiliate marketing platform for curating and showcasing the best deals, built with Next.js 14, TypeScript, and Prisma.
+A comprehensive multi-tenant deals platform for curating and showcasing the best deals with custom branding per subdomain. Built with Next.js 14, TypeScript, and Prisma. Perfect for influencers to run their own branded deals site (e.g., "PM Deals", "Tech Deals").
 
 ## Features
 

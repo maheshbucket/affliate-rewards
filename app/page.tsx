@@ -137,10 +137,10 @@ export default async function HomePage() {
       <div className="bg-gradient-to-r from-primary-600 to-primary-800 rounded-2xl p-8 md:p-12 text-white mb-8">
         <div className="max-w-3xl">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Discover Amazing Deals & Earn Rewards
+            Best Deals, Curated for You
           </h1>
           <p className="text-xl mb-6 text-primary-100">
-            Your centralized hub for the best affiliate deals. Save money and earn points with every purchase!
+            Discover hand-picked deals on electronics, fashion, home goods, and more. All verified and updated daily!
           </p>
           <div className="flex flex-wrap gap-4">
             <Link
@@ -151,7 +151,7 @@ export default async function HomePage() {
             </Link>
             <ShareButton
               url={siteUrl}
-              title="Check out these amazing deals on Affiliate Rewards!"
+              title="Check out these amazing deals!"
             />
           </div>
         </div>

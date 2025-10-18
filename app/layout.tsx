@@ -11,22 +11,22 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-  title: 'Affiliate Rewards - Best Deals & Discounts Hub',
-  description: 'Discover the best affiliate deals and discounts in one place. Earn rewards while you shop and save money!',
-  keywords: 'deals, discounts, affiliate, rewards, shopping, savings',
-  authors: [{ name: 'Affiliate Rewards' }],
+  title: 'Best Deals - Curated Daily Discounts & Offers',
+  description: 'Find the best deals on electronics, fashion, home & garden, beauty, sports, and travel. All deals curated and verified daily.',
+  keywords: 'deals, best deals, discounts, offers, shopping, savings, curated deals, daily deals',
+  authors: [{ name: 'Deals' }],
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: process.env.NEXT_PUBLIC_SITE_URL,
-    siteName: 'Affiliate Rewards',
-    title: 'Affiliate Rewards - Best Deals & Discounts Hub',
-    description: 'Discover the best affiliate deals and discounts in one place. Earn rewards while you shop and save money!',
+    siteName: 'Deals',
+    title: 'Best Deals - Curated Daily Discounts & Offers',
+    description: 'Find the best deals on electronics, fashion, home & garden, beauty, sports, and travel. All deals curated and verified daily.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Affiliate Rewards - Best Deals & Discounts Hub',
-    description: 'Discover the best affiliate deals and discounts in one place. Earn rewards while you shop and save money!',
+    title: 'Best Deals - Curated Daily Discounts & Offers',
+    description: 'Find the best deals on electronics, fashion, home & garden, beauty, sports, and travel. All deals curated and verified daily.',
   },
 }
 

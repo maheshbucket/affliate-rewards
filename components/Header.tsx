@@ -7,10 +7,22 @@ import { useState } from 'react'
 import { useTenant } from './TenantProvider'
 import Image from 'next/image'
 
+// Format subdomain into "Subdomain Deals" (e.g., "pm" -> "PM Deals")
+function formatTenantName(subdomain?: string): string {
+  if (!subdomain || subdomain === 'default') return 'Deals'
+  const formatted = subdomain
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+  return `${formatted} Deals`
+}
+
 export function Header() {
   const { data: session } = useSession()
   const { tenant } = useTenant()
   const [showUserMenu, setShowUserMenu] = useState(false)
+  
+  const displayName = formatTenantName(tenant?.subdomain)
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -21,7 +33,7 @@ export function Header() {
             {tenant?.logo ? (
               <Image 
                 src={tenant.logo} 
-                alt={tenant.name}
+                alt={displayName}
                 width={32}
                 height={32}
                 className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
@@ -30,7 +42,7 @@ export function Header() {
               <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-primary-600" />
             )}
             <span className="text-lg sm:text-xl font-bold text-gray-900">
-              {tenant?.name || 'Affiliate Rewards'}
+              {displayName}
             </span>
           </Link>
 
