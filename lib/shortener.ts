@@ -11,19 +11,30 @@ export async function createShortUrl(
     utmSource?: string
     utmMedium?: string
     utmCampaign?: string
+    tenantId: string // Required for multi-tenancy
   }
 ): Promise<string> {
   try {
-    // Generate unique short code
+    // Generate unique short code within tenant
     let shortCode = generateShortCode(6)
     let exists = await prisma.share.findUnique({
-      where: { shortUrl: shortCode },
+      where: { 
+        shortUrl_tenantId: {
+          shortUrl: shortCode,
+          tenantId: options.tenantId,
+        }
+      },
     })
 
     while (exists) {
       shortCode = generateShortCode(6)
       exists = await prisma.share.findUnique({
-        where: { shortUrl: shortCode },
+        where: { 
+          shortUrl_tenantId: {
+            shortUrl: shortCode,
+            tenantId: options.tenantId,
+          }
+        },
       })
     }
 
@@ -38,6 +49,7 @@ export async function createShortUrl(
         utmSource: options.utmSource,
         utmMedium: options.utmMedium,
         utmCampaign: options.utmCampaign,
+        tenantId: options.tenantId,
       },
     })
 
@@ -77,10 +89,15 @@ export async function createBitlyShortUrl(longUrl: string): Promise<string | nul
   }
 }
 
-export async function trackShortUrlClick(shortCode: string): Promise<void> {
+export async function trackShortUrlClick(shortCode: string, tenantId: string): Promise<void> {
   try {
     await prisma.share.update({
-      where: { shortUrl: shortCode },
+      where: { 
+        shortUrl_tenantId: {
+          shortUrl: shortCode,
+          tenantId,
+        }
+      },
       data: {
         clicks: {
           increment: 1,
@@ -92,15 +109,20 @@ export async function trackShortUrlClick(shortCode: string): Promise<void> {
   }
 }
 
-export async function resolveShortUrl(shortCode: string): Promise<string | null> {
+export async function resolveShortUrl(shortCode: string, tenantId: string): Promise<string | null> {
   try {
     const share = await prisma.share.findUnique({
-      where: { shortUrl: shortCode },
+      where: { 
+        shortUrl_tenantId: {
+          shortUrl: shortCode,
+          tenantId,
+        }
+      },
       select: { originalUrl: true },
     })
 
     if (share) {
-      await trackShortUrlClick(shortCode)
+      await trackShortUrlClick(shortCode, tenantId)
       return share.originalUrl
     }
 

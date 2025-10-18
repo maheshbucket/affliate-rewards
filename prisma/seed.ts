@@ -6,11 +6,35 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('Seeding database...')
 
+  // Create or get default tenant
+  const tenant = await prisma.tenant.upsert({
+    where: { subdomain: 'default' },
+    update: {},
+    create: {
+      name: 'Default Organization',
+      subdomain: 'default',
+      brandName: 'Affiliate Rewards',
+      ownerEmail: 'admin@example.com',
+      ownerName: 'Admin',
+      primaryColor: '#3b82f6',
+      secondaryColor: '#1e40af',
+      accentColor: '#10b981',
+      status: 'ACTIVE',
+    },
+  })
+
+  console.log('Created/found default tenant:', tenant.subdomain)
+
   // Create admin user
   const hashedPassword = await bcrypt.hash('admin123456', 12)
   
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
+    where: { 
+      email_tenantId: {
+        email: 'admin@example.com',
+        tenantId: tenant.id,
+      }
+    },
     update: {},
     create: {
       email: 'admin@example.com',
@@ -18,6 +42,7 @@ async function main() {
       password: hashedPassword,
       role: 'ADMIN',
       points: 0,
+      tenantId: tenant.id,
     },
   })
 
@@ -48,9 +73,17 @@ async function main() {
 
   for (const category of categories) {
     await prisma.category.upsert({
-      where: { slug: category.slug },
+      where: { 
+        slug_tenantId: {
+          slug: category.slug,
+          tenantId: tenant.id,
+        }
+      },
       update: {},
-      create: category,
+      create: {
+        ...category,
+        tenantId: tenant.id,
+      },
     })
   }
 

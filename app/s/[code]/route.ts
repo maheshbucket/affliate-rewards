@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { resolveShortUrl } from '@/lib/shortener'
+import { getCurrentTenant } from '@/lib/tenant'
 
 // GET /s/[code] - Redirect short URL
 export async function GET(
@@ -7,7 +8,14 @@ export async function GET(
   { params }: { params: { code: string } }
 ) {
   try {
-    const originalUrl = await resolveShortUrl(params.code)
+    // Get current tenant
+    const tenant = await getCurrentTenant()
+    
+    if (!tenant) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+
+    const originalUrl = await resolveShortUrl(params.code, tenant.id)
 
     if (!originalUrl) {
       return NextResponse.redirect(new URL('/', request.url))

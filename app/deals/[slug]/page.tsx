@@ -6,14 +6,26 @@ import { formatPrice, formatRelativeTime, extractDomain } from '@/lib/utils'
 import { ShareButton } from '@/components/ShareButton'
 import { Clock, ExternalLink, Eye, MousePointerClick, Calendar, Tag } from 'lucide-react'
 import type { Metadata } from 'next'
+import { getCurrentTenant } from '@/lib/tenant'
 
 interface PageProps {
   params: { slug: string }
 }
 
 async function getDeal(slug: string) {
+  const tenant = await getCurrentTenant()
+  
+  if (!tenant) {
+    return null
+  }
+
   const deal = await prisma.deal.findUnique({
-    where: { slug },
+    where: { 
+      slug_tenantId: {
+        slug,
+        tenantId: tenant.id,
+      }
+    },
     include: {
       category: true,
       user: {
