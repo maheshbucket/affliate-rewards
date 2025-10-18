@@ -88,7 +88,10 @@ export default function TenantsAdminPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create tenant')
+        const errorMsg = data.details 
+          ? `${data.error} (${data.details})`
+          : (data.error || 'Failed to create tenant')
+        throw new Error(errorMsg)
       }
 
       setSuccess('Tenant created successfully!')

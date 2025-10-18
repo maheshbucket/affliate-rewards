@@ -138,10 +138,13 @@ export async function POST(req: NextRequest) {
       tenant,
       message: 'Tenant created successfully'
     }, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating tenant:', error)
     return NextResponse.json(
-      { error: 'Failed to create tenant' },
+      { 
+        error: error?.message || 'Failed to create tenant',
+        details: error?.code || 'UNKNOWN_ERROR'
+      },
       { status: 500 }
     )
   }
