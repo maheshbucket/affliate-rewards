@@ -2,14 +2,26 @@ import { DealCard } from '@/components/DealCard'
 import prisma from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { getCurrentTenant } from '@/lib/tenant'
 
 interface PageProps {
   params: { slug: string }
 }
 
 async function getCategory(slug: string) {
+  const tenant = await getCurrentTenant()
+  
+  if (!tenant) {
+    return null
+  }
+
   return prisma.category.findUnique({
-    where: { slug },
+    where: { 
+      slug_tenantId: {
+        slug,
+        tenantId: tenant.id,
+      }
+    },
     include: {
       deals: {
         where: {
