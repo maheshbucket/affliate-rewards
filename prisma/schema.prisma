@@ -33,10 +33,67 @@ enum AffiliateNetwork {
   CUSTOM
 }
 
+enum TenantStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model Tenant {
+  id              String        @id @default(cuid())
+  name            String        // Company/Influencer name
+  subdomain       String        @unique // unique subdomain (e.g., "influencer1")
+  customDomain    String?       @unique // optional custom domain
+  
+  // Branding
+  brandName       String        // Display name
+  logo            String?       // Logo URL
+  favicon         String?       // Favicon URL
+  primaryColor    String        @default("#3b82f6") // Tailwind blue-500
+  secondaryColor  String        @default("#1e40af") // Tailwind blue-800
+  accentColor     String        @default("#10b981") // Tailwind green-500
+  
+  // SEO & Marketing
+  tagline         String?
+  description     String?       @db.Text
+  metaTitle       String?
+  metaDescription String?
+  
+  // Settings
+  timezone        String        @default("UTC")
+  currency        String        @default("USD")
+  language        String        @default("en")
+  
+  // Features
+  features        String        @default("[]") @db.Text // JSON array of enabled features
+  
+  // Status & Limits
+  status          TenantStatus  @default(ACTIVE)
+  maxUsers        Int           @default(1000)
+  maxDeals        Int           @default(500)
+  
+  // Owner info
+  ownerName       String?
+  ownerEmail      String
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Relations
+  users           User[]
+  deals           Deal[]
+  categories      Category[]
+  shares          Share[]
+  
+  @@index([subdomain])
+  @@index([status])
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String
   emailVerified DateTime?
   image         String?
   password      String?
@@ -46,6 +103,10 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   banned        Boolean   @default(false)
+  
+  // Multi-tenancy
+  tenantId      String
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   // Relations
   accounts      Account[]
@@ -59,7 +120,9 @@ model User {
   activities    UserActivity[]
   shares        Share[]
 
+  @@unique([email, tenantId])
   @@index([email])
+  @@index([tenantId])
 }
 
 model Account {
@@ -99,22 +162,28 @@ model VerificationToken {
 
 model Category {
   id          String   @id @default(cuid())
-  name        String   @unique
-  slug        String   @unique
+  name        String
+  slug        String
   description String?
   icon        String?
   order       Int      @default(0)
   createdAt   DateTime @default(now())
+  
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   deals Deal[]
 
+  @@unique([slug, tenantId])
   @@index([slug])
+  @@index([tenantId])
 }
 
 model Deal {
   id              String          @id @default(cuid())
   title           String
-  slug            String          @unique
+  slug            String
   description     String          @db.Text
   originalPrice   Float
   dealPrice       Float
@@ -143,6 +212,10 @@ model Deal {
   updatedAt       DateTime        @updatedAt
   approvedAt      DateTime?
   
+  // Multi-tenancy
+  tenantId        String
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
   // Relations
   userId          String
   user            User            @relation(fields: [userId], references: [id])
@@ -156,12 +229,14 @@ model Deal {
   shares          Share[]
   analytics       DealAnalytics[]
 
+  @@unique([slug, tenantId])
   @@index([slug])
   @@index([status])
   @@index([userId])
   @@index([categoryId])
   @@index([featured])
   @@index([expiresAt])
+  @@index([tenantId])
 }
 
 model Tag {
@@ -289,7 +364,7 @@ model UserActivity {
 
 model Share {
   id          String   @id @default(cuid())
-  shortUrl    String   @unique
+  shortUrl    String
   originalUrl String   @db.Text
   platform    String   // 'twitter', 'facebook', 'email', 'direct'
   
@@ -301,13 +376,19 @@ model Share {
   clicks      Int      @default(0)
   createdAt   DateTime @default(now())
   
+  // Multi-tenancy
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
   userId      String?
   user        User?    @relation(fields: [userId], references: [id])
   dealId      String?
   deal        Deal?    @relation(fields: [dealId], references: [id])
 
+  @@unique([shortUrl, tenantId])
   @@index([shortUrl])
   @@index([dealId])
+  @@index([tenantId])
 }
 
 model DealAnalytics {

@@ -22,17 +22,35 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        tenantId: { label: 'Tenant ID', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Invalid credentials')
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-        })
+        // Find user by email and optional tenantId
+        let user
+        
+        if (credentials.tenantId) {
+          user = await prisma.user.findUnique({
+            where: {
+              email_tenantId: {
+                email: credentials.email,
+                tenantId: credentials.tenantId,
+              },
+            },
+            include: { tenant: true },
+          })
+        } else {
+          // Fallback for development or if tenantId not provided
+          user = await prisma.user.findFirst({
+            where: {
+              email: credentials.email,
+            },
+            include: { tenant: true },
+          })
+        }
 
         if (!user || !user.password) {
           throw new Error('Invalid credentials')
@@ -57,6 +75,8 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           image: user.image,
           role: user.role,
+          tenantId: user.tenantId,
+          tenantSubdomain: user.tenant.subdomain,
         }
       },
     }),
@@ -66,6 +86,17 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = user.role
         token.id = user.id
+        
+        // Fetch and add tenant information
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: { tenant: true },
+        })
+        
+        if (dbUser) {
+          token.tenantId = dbUser.tenantId
+          token.tenantSubdomain = dbUser.tenant.subdomain
+        }
       }
       
       if (trigger === 'update' && session) {
@@ -78,6 +109,8 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         session.user.role = token.role as any
         session.user.id = token.id as string
+        session.user.tenantId = token.tenantId as string
+        session.user.tenantSubdomain = token.tenantSubdomain as string
       }
       return session
     },

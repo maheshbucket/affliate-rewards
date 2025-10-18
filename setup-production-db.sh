@@ -33,3 +33,4 @@ echo "   Password: admin123456"
 echo ""
 echo "⚠️  IMPORTANT: Change the admin password after first login!"
 
+

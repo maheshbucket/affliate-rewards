@@ -2,11 +2,10 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import prisma from '@/lib/prisma'
 import { authOptions } from '@/lib/auth'
+import { getCurrentTenant } from '@/lib/tenant'
 import { z } from 'zod'
 import { generateUniqueSlug, calculateSavings, validateAffiliateUrl } from '@/lib/utils'
 import { awardPoints, POINT_VALUES } from '@/lib/points'
-
-export const dynamic = 'force-dynamic'
 
 const createDealSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -25,6 +24,16 @@ const createDealSchema = z.object({
 // GET /api/deals - List deals with filters
 export async function GET(request: Request) {
   try {
+    // Get current tenant
+    const tenant = await getCurrentTenant()
+    
+    if (!tenant) {
+      return NextResponse.json(
+        { error: 'No tenant found' },
+        { status: 400 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
@@ -37,10 +46,11 @@ export async function GET(request: Request) {
 
     const where: any = {
       status: status as any,
+      tenantId: tenant.id, // Filter by tenant
     }
 
     if (category) {
-      where.category = { slug: category }
+      where.category = { slug: category, tenantId: tenant.id }
     }
 
     if (search) {
@@ -51,9 +61,13 @@ export async function GET(request: Request) {
     }
 
     // Filter out expired deals
-    where.OR = [
-      { expiresAt: null },
-      { expiresAt: { gt: new Date() } },
+    where.AND = [
+      {
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } },
+        ]
+      }
     ]
 
     let orderBy: any = { createdAt: 'desc' }
@@ -140,6 +154,16 @@ export async function POST(request: Request) {
       )
     }
 
+    // Get current tenant
+    const tenant = await getCurrentTenant()
+    
+    if (!tenant) {
+      return NextResponse.json(
+        { error: 'No tenant found' },
+        { status: 400 }
+      )
+    }
+
     const body = await request.json()
     const data = createDealSchema.parse(body)
 
@@ -152,11 +176,18 @@ export async function POST(request: Request) {
       )
     }
 
-    // Generate unique slug
+    // Generate unique slug within tenant
     const slug = await generateUniqueSlug(
       data.title,
       async (slug) => {
-        const existing = await prisma.deal.findUnique({ where: { slug } })
+        const existing = await prisma.deal.findUnique({ 
+          where: { 
+            slug_tenantId: {
+              slug,
+              tenantId: tenant.id,
+            }
+          } 
+        })
         return !!existing
       }
     )
@@ -181,6 +212,7 @@ export async function POST(request: Request) {
         expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
         categoryId: data.categoryId,
         userId: session.user.id,
+        tenantId: tenant.id, // Add tenant ID
         status: 'PENDING', // Requires approval
         metaTitle: data.title,
         metaDescription: data.description.substring(0, 160),

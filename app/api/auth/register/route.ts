@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import prisma from '@/lib/prisma'
+import { getCurrentTenant } from '@/lib/tenant'
 import { z } from 'zod'
 
 const registerSchema = z.object({
@@ -14,9 +15,24 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { name, email, password } = registerSchema.parse(body)
 
-    // Check if user exists
+    // Get current tenant
+    const tenant = await getCurrentTenant()
+    
+    if (!tenant) {
+      return NextResponse.json(
+        { error: 'No tenant found. Please access via a valid subdomain.' },
+        { status: 400 }
+      )
+    }
+
+    // Check if user exists in this tenant
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { 
+        email_tenantId: {
+          email,
+          tenantId: tenant.id,
+        }
+      },
     })
 
     if (existingUser) {
@@ -37,6 +53,7 @@ export async function POST(request: Request) {
         password: hashedPassword,
         role: 'USER',
         points: 0,
+        tenantId: tenant.id,
       },
     })
 
@@ -53,6 +70,7 @@ export async function POST(request: Request) {
           id: user.id,
           name: user.name,
           email: user.email,
+          tenantId: user.tenantId,
         },
       },
       { status: 201 }

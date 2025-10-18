@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { getCurrentTenant } from '@/lib/tenant'
 import { generateSlug } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
@@ -9,7 +10,20 @@ export const dynamic = 'force-dynamic'
 // GET /api/categories - List all categories
 export async function GET() {
   try {
+    // Get current tenant
+    const tenant = await getCurrentTenant()
+    
+    if (!tenant) {
+      return NextResponse.json(
+        { error: 'No tenant found' },
+        { status: 400 }
+      )
+    }
+
     const categories = await prisma.category.findMany({
+      where: {
+        tenantId: tenant.id,
+      },
       orderBy: { order: 'asc' },
       include: {
         _count: {
@@ -17,6 +31,7 @@ export async function GET() {
             deals: {
               where: {
                 status: 'APPROVED',
+                tenantId: tenant.id,
               },
             },
           },
@@ -46,6 +61,16 @@ export async function POST(request: Request) {
       )
     }
 
+    // Get current tenant
+    const tenant = await getCurrentTenant()
+    
+    if (!tenant) {
+      return NextResponse.json(
+        { error: 'No tenant found' },
+        { status: 400 }
+      )
+    }
+
     const body = await request.json()
     const { name, description, icon } = body
 
@@ -57,6 +82,7 @@ export async function POST(request: Request) {
         slug,
         description,
         icon,
+        tenantId: tenant.id,
       },
     })
 

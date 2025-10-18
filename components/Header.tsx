@@ -4,9 +4,12 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { Search, Plus, Trophy, User, LogOut, Settings, LayoutDashboard } from 'lucide-react'
 import { useState } from 'react'
+import { useTenant } from './TenantProvider'
+import Image from 'next/image'
 
 export function Header() {
   const { data: session } = useSession()
+  const { tenant } = useTenant()
   const [showUserMenu, setShowUserMenu] = useState(false)
 
   return (
@@ -15,9 +18,19 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-primary-600" />
+            {tenant?.logo ? (
+              <Image 
+                src={tenant.logo} 
+                alt={tenant.name}
+                width={32}
+                height={32}
+                className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
+              />
+            ) : (
+              <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-primary-600" />
+            )}
             <span className="text-lg sm:text-xl font-bold text-gray-900">
-              Affiliate Rewards
+              {tenant?.name || 'Affiliate Rewards'}
             </span>
           </Link>
 
