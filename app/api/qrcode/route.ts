@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { generateQRCode } from '@/lib/qrcode'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 // POST /api/qrcode - Generate QR code
 export async function POST(request: Request) {
   try {

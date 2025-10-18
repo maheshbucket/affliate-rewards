@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getLeaderboard } from '@/lib/points'
 
+// Force dynamic rendering (uses request.url)
+export const dynamic = 'force-dynamic'
+
 // GET /api/leaderboard - Get points leaderboard
 export async function GET(request: Request) {
   try {

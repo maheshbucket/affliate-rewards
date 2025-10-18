@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { isValidSubdomain, isSubdomainAvailable } from '@/lib/tenant'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 // GET /api/tenants - List all tenants (Super Admin only)
 export async function GET(req: NextRequest) {
   try {

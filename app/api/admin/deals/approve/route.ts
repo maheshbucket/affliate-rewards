@@ -4,6 +4,9 @@ import prisma from '@/lib/prisma'
 import { authOptions } from '@/lib/auth'
 import { awardPoints, POINT_VALUES } from '@/lib/points'
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 // POST /api/admin/deals/approve - Approve a deal
 export async function POST(request: Request) {
   try {
