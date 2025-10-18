@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import prisma from '@/lib/prisma'
 import { authOptions } from '@/lib/auth'
+import { getCurrentTenant } from '@/lib/tenant'
 
 // GET /api/deals/[slug] - Get a single deal
 export async function GET(
@@ -9,8 +10,23 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
+    // Get current tenant
+    const tenant = await getCurrentTenant()
+    
+    if (!tenant) {
+      return NextResponse.json(
+        { error: 'No tenant found' },
+        { status: 400 }
+      )
+    }
+
     const deal = await prisma.deal.findUnique({
-      where: { slug: params.slug },
+      where: { 
+        slug_tenantId: {
+          slug: params.slug,
+          tenantId: tenant.id,
+        }
+      },
       include: {
         category: true,
         user: {
@@ -127,8 +143,23 @@ export async function PATCH(
       )
     }
 
+    // Get current tenant
+    const tenant = await getCurrentTenant()
+    
+    if (!tenant) {
+      return NextResponse.json(
+        { error: 'No tenant found' },
+        { status: 400 }
+      )
+    }
+
     const deal = await prisma.deal.findUnique({
-      where: { slug: params.slug },
+      where: { 
+        slug_tenantId: {
+          slug: params.slug,
+          tenantId: tenant.id,
+        }
+      },
     })
 
     if (!deal) {
@@ -151,7 +182,7 @@ export async function PATCH(
 
     const body = await request.json()
     const updatedDeal = await prisma.deal.update({
-      where: { slug: params.slug },
+      where: { id: deal.id },
       data: body,
       include: {
         category: true,
@@ -195,8 +226,23 @@ export async function DELETE(
       )
     }
 
+    // Get current tenant
+    const tenant = await getCurrentTenant()
+    
+    if (!tenant) {
+      return NextResponse.json(
+        { error: 'No tenant found' },
+        { status: 400 }
+      )
+    }
+
     const deal = await prisma.deal.findUnique({
-      where: { slug: params.slug },
+      where: { 
+        slug_tenantId: {
+          slug: params.slug,
+          tenantId: tenant.id,
+        }
+      },
     })
 
     if (!deal) {
@@ -218,7 +264,7 @@ export async function DELETE(
     }
 
     await prisma.deal.delete({
-      where: { slug: params.slug },
+      where: { id: deal.id },
     })
 
     // Create audit log

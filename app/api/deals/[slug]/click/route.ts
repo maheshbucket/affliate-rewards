@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { getCurrentTenant } from '@/lib/tenant'
 
 // POST /api/deals/[slug]/click - Track deal clicks
 export async function POST(
@@ -7,8 +8,23 @@ export async function POST(
   { params }: { params: { slug: string } }
 ) {
   try {
+    // Get current tenant
+    const tenant = await getCurrentTenant()
+    
+    if (!tenant) {
+      return NextResponse.json(
+        { error: 'No tenant found' },
+        { status: 400 }
+      )
+    }
+
     const deal = await prisma.deal.findUnique({
-      where: { slug: params.slug },
+      where: { 
+        slug_tenantId: {
+          slug: params.slug,
+          tenantId: tenant.id,
+        }
+      },
     })
 
     if (!deal) {

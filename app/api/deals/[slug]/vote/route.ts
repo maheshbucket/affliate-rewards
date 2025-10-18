@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import prisma from '@/lib/prisma'
 import { authOptions } from '@/lib/auth'
 import { awardPoints, POINT_VALUES } from '@/lib/points'
+import { getCurrentTenant } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,8 +31,23 @@ export async function POST(
       )
     }
 
+    // Get current tenant
+    const tenant = await getCurrentTenant()
+    
+    if (!tenant) {
+      return NextResponse.json(
+        { error: 'No tenant found' },
+        { status: 400 }
+      )
+    }
+
     const deal = await prisma.deal.findUnique({
-      where: { slug: params.slug },
+      where: { 
+        slug_tenantId: {
+          slug: params.slug,
+          tenantId: tenant.id,
+        }
+      },
     })
 
     if (!deal) {
