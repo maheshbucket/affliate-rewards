@@ -225,7 +225,6 @@ model Deal {
   tags            Tag[]
   votes           Vote[]
   comments        Comment[]
-  auditLogs       AuditLog[]
   shares          Share[]
   analytics       DealAnalytics[]
 
@@ -417,8 +416,6 @@ model AuditLog {
   changes     String   @db.Text // JSON of changes
   performedBy String   // userId
   createdAt   DateTime @default(now())
-  
-  deal        Deal?    @relation(fields: [entityId], references: [id])
 
   @@index([entityId])
   @@index([performedBy])
